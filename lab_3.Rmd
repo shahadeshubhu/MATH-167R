@@ -1,0 +1,97 @@
+---
+title: "Lab 3"
+author: "SHUBHU SHAHADE"
+date: "2023-09-06"
+output: html_document
+---
+
+You should edit this .Rmd using RStudio, then click *Render* in the menu bar of the Source window (above the text of this .Rmd). Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit!
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+#install.packages("readr")
+#install.packages("curl")
+```
+
+## A. Weather Forecast Data
+
+1.  For this lab, we'll be using data on weather forecasts gathered by student at Saint Louis University. You can read about the dataset [here](https://github.com/rfordatascience/tidytuesday/tree/master/data/2022/2022-12-20). Download the weather forecasts data using the following code:
+
+```{r}
+weather_forecasts <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-12-20/weather_forecasts.csv')
+weather_forecasts
+```
+
+2.  How many rows are in this dataset? How many columns?
+
+```{r}
+# YOUR CODE HERE
+dim(weather_forecasts)
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> 651968 rows and 10 columns in the dataset 
+
+3.  How many cities are represented in this dataset?
+
+```{r}
+# YOUR CODE HERE
+city_count <- length(unique(weather_forecasts$city))
+city_count
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> 160 cities in the dataset
+
+4.  Create a new data frame containing only the forecasts for San Jose. You may have to explore the values for the `city` variable.
+
+```{r}
+# YOUR CODE HERE
+sj_weather_forecasts <- weather_forecasts[weather_forecasts$city == "SAN_JOSE", ]
+sj_weather_forecasts
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> 
+
+5. Compute the mean absolute error between `observed_temp` and `forecast_temp` for San Jose.
+
+```{r}
+# YOUR CODE HERE
+sj_weather_forecasts <- sj_weather_forecasts[complete.cases(sj_weather_forecasts), ]
+absolute_differences <- abs(sj_weather_forecasts$observed_temp - sj_weather_forecasts$forecast_temp)
+mean_abs_diff <- mean(absolute_differences)
+mean_abs_diff
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> The difference in mean absolute error between observed and forecast temperature is 2.171611
+
+6. Compute the mean absolute error between `observed_temp` and `forecast_temp` for San Jose using only forecasts made 48 hours in advance.
+
+```{r}
+# YOUR CODE HERE
+forty_eight_hr_forecast <- sj_weather_forecasts[sj_weather_forecasts$forecast_hours_before == 48, ]
+forty_eight_hr_forecast
+absolute_differences <- abs(forty_eight_hr_forecast$observed_temp - forty_eight_hr_forecast$forecast_temp)
+mean_abs_diff <- mean(absolute_differences)
+mean_abs_diff
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE -->The difference in mean absolute error between observed and forecast temperature for 48 hrs in advance is 2.264327
+
+7. Compute the mean absolute error between `observed_temp` and `forecast_temp` for San Jose using only forecasts made 12 hours in advance.
+
+```{r}
+# YOUR CODE HERE
+twelve_hr_forecast <- sj_weather_forecasts[sj_weather_forecasts$forecast_hours_before == 12, ]
+absolute_differences <- abs(twelve_hr_forecast$observed_temp - twelve_hr_forecast$forecast_temp)
+mean_abs_diff <- mean(absolute_differences)
+mean_abs_diff
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> The difference in mean absolute error between observed and forecast temperature for 12 hrs in advance is 2.057737
+
+8. Compare your answers to 6 and 7. What do you notice? 
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> I can notice that the difference in mean absolute errors is less for the forecast made 12 hrs in advance than when compared to the forecast done 48 hrs in advance. 

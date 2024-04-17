@@ -1,0 +1,25 @@
+---
+title: "Check-in 5"
+author: "Shubhu Shahade"
+date: "2023-10-09"
+format: 
+  html:
+    code-tools: true
+    code-summary: "Code"
+---
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+1. (Project Euler Problem 1) The natural numbers less than 10 that are divisible by 3 or 5 are 3, 5, 6, and 9. The sum of these numbers is 23. Write R code to compute the sum of all the numbers less than 1000 that are divisible by 3 or 5.
+```{r}
+sum_of_numbers <- 0
+
+for (i in 1:999) {
+  if (i %% 3 == 0 || i %% 5 == 0) {
+    sum_of_numbers <- sum_of_numbers + i
+  }
+}
+print(sum_of_numbers)
+```

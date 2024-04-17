@@ -1,0 +1,94 @@
+---
+title: "Lab 2"
+author: "Shubhu Shahade"
+date: "2023-08-30"
+output: html_document
+---
+
+You should edit this .Rmd using RStudio, then click *Render* in the menu bar of the Source window (above the text of this .Rmd). Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit!
+
+### Collaborators
+
+## A. Functions and Vectors
+
+In this problem, we will revisit the `sample` function to simulate the birthday problem. The birthday problem asks for the probability that in a set of $n$ randomly chosen people, at least two will share a birthday. For the purpose of this problem, suppose that we live in a universe where there are exactly 365 days in a year (sorry to those of you with leap day birthdays!) and each individual has an equal probability of being born on any given day.
+
+**1.** Write code to create a vector `birthdays` of the numbers 1:365.
+
+```{r, eval = T}
+birthdays <- seq(1, 365)
+    ```
+
+**2.** Use the `sample()` function to sample $n=5$ birthdays (with replacement) from `birthdays` and save it as a vector `sample_5`. Repeat this with $n=10, 20, 30, 50, 100$. You may want to use `set.seed()` to set a random seed.
+
+    ```{r, eval = T}
+set.seed(569)
+sample_5 <- sample(birthdays, size = 5, replace = TRUE)
+sample_10 <- sample(birthdays, size = 10, replace = TRUE)
+sample_20 <- sample(birthdays, size = 20, replace = TRUE)
+sample_30 <- sample(birthdays, size = 30, replace = TRUE)
+sample_50 <- sample(birthdays, size = 50, replace = TRUE)
+sample_100 <- sample(birthdays, size = 100, replace = TRUE)
+    ```
+
+**3.** Did you sample the same birthday twice in `sample_5`? What about for the other samples? Write code that can be used to test whether any of the days appears twice in each of your samples. There are many ways to do this and you can use any functions. In particular, `length()` and `unique()` may be useful.
+
+    ```{r, eval = T}
+  sample_list <- list(sample_5, sample_10, sample_20, sample_30, sample_50, sample_100)
+    
+  for (i in 1:length(sample_list)) {
+  my_sample <- sample_list[[i]]
+
+  unique_sample <- unique(my_sample)
+  
+  if (length(unique_sample) < length(my_sample)) {
+    cat("There are repeated values in sample", i, "\n")
+  } else {
+    cat("There are no repeated values in sample", i, "\n")
+  }
+}
+    ```
+
+**4.** What do you observe? Discuss any patterns or surprising findings.
+
+I can see that the birthdays are repeated for sample 2,4,5 and 6. However, repeated values change when value in set seed function changes.
+
+## B. Working with Data Frames
+
+Use the following code to load the `penguins` data.
+
+```{r, eval = T}
+# load palmer penguins package
+library(palmerpenguins)
+
+# open penguins data as a data frame
+data(penguins)
+penguins <- as.data.frame(penguins)
+```
+
+**5.** Using the `mean()` function, compute the mean body mass of penguins in the dataset, dropping any missing values.
+
+    ```{r, eval = T}
+    mean_body_mass <- mean(penguins$body_mass_g, na.rm = TRUE)
+    mean_body_mass
+    ```
+    
+   4201.754
+    
+**6.** Using the `max` function, compute the maximum flipper length of penguins in the dataset, dropping any missing values.
+
+    ```{r, eval = T}
+    max_flipper_length <- max(penguins$flipper_length_mm, na.rm = TRUE)
+    max_flipper_length
+    ```
+    
+    231 
+    
+**7.** Using the `hist` function, create a histogram of the ratio of the penguins' bill length to bill depth, dropping any missing values. What is the shape of the resulting distribution?
+
+    ```{r, eval = T}
+    # YOUR CODE HERE
+    penguins$ratio <- penguins$bill_length_mm/ penguins$bill_depth_mm
+    hist(penguins$ratio, na.rm = TRUE)
+    ```
+    The graph looks bimodal 

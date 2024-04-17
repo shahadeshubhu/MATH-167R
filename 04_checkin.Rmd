@@ -1,0 +1,60 @@
+---
+title: "Check-in 4"
+author: "Shubhu Shahade"
+date: "2023-09-18"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+## A. Housing units data
+
+```{r, warning = F, message = F}
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(knitr)
+housing_units <- readr::read_csv("https://www2.census.gov/programs-surveys/popest/datasets/2010-2020/housing/HU-EST2020_ALL.csv")
+US_housing_units <- housing_units %>%
+  filter(SUMLEV == "010")
+
+US_housing_units
+```
+
+**1**. Generate a line plot of the number of housing units in the entire United States from 2010 to 2020.
+```{r, warning = F, message = F}
+
+US_housing_units<- US_housing_units |> 
+  select(-HUESTIMATE042020) |>
+  pivot_longer(contains("HUESTIMATE20"), 
+               names_to = "Year",
+               values_to = "HousingUnits") |>
+  mutate(Year = as.numeric(stringr::str_sub(Year, start = 11)))
+ggplot(data = US_housing_units, aes(x =Year, y =HousingUnits)) + 
+  geom_line()
+```
+
+
+**2.** Generate a line plot of the number of housing units in each of the four regions (Midwest, Northeast, South, and West) from 2010 to 2020, using a different color for each region.
+```{r, warning = F, message = F}
+region_housing_units <- housing_units %>%
+  filter(SUMLEV == "020")
+region_housing_units
+
+region_housing_units<- region_housing_units |> 
+  select(-HUESTIMATE042020) |>
+  pivot_longer(contains("HUESTIMATE20"), 
+               names_to = "Year",
+               values_to = "HousingUnits") |>
+  mutate(Year = as.numeric(stringr::str_sub(Year, start = 11)))
+ggplot(data = region_housing_units, aes(x =Year, y =HousingUnits, color = REGNAME)) + 
+  geom_line()
+```

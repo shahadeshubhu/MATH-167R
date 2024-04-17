@@ -1,0 +1,85 @@
+---
+title: "Check-in 3"
+author: "Shubhu Shahade"
+date: "2023-09-11"
+format: 
+  html:
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+## A. Flights Data
+
+**1.**  For this lab, we'll be using the `flights` data. You can load this data using the following code:
+
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+library(nycflights13)
+data(flights)
+flights
+```
+
+**2.** Use the `mutate()` function to turn `origin` into a factor.
+
+```{r}
+# YOUR CODE HERE
+
+# Using mutate to convert a column to a factor
+flights <- flights %>%
+  mutate(flights$origin == as.factor(flights$origin))
+
+flights
+```
+
+**3.** Compute the mean `arr_delay` for each origin airport. Which airport has the longest delays on average? You can drop missing rows.
+
+```{r}
+# YOUR CODE HERE
+origin_mean_arr_delay <- aggregate(flights$arr_delay ~ flights$origin, data = flights, FUN = mean, na.rm = TRUE)
+origin_mean_arr_delay
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> EWR airport has the longest delays on average 
+
+
+**4.** Use the `mutate()` function to turn `month` into a factor.
+
+```{r}
+# YOUR CODE HERE
+flights <- flights %>%
+  mutate(flights$month == as.factor(flights$month))
+
+flights
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE -->
+
+
+**5.** Compute the mean `arr_delay` by month. What do you notice?
+
+```{r}
+# YOUR CODE HERE
+month_mean_arr_delay <- aggregate(flights$arr_delay ~ flights$month, data = flights, FUN = mean, na.rm = TRUE)
+month_mean_arr_delay
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> Maximum delays occur during the months of June, July, December and April.There's negative delay during September and October. 
+
+
+**6.** Compute the mean `arr_delay` by month AND airport. What do you notice?
+
+```{r}
+# YOUR CODE HERE
+mean_arr_delay <- aggregate(flights$arr_delay ~ flights$month + flights$origin, data = flights, FUN = mean, na.rm = TRUE)
+mean_arr_delay
+```
+
+<!--# YOUR ANSWER/EXPLANATION HERE --> The pattern is a bit consistent for all 3 airports. The all have a lot of delays in the last month of the year and during the months of June and July. EWR has significant delays running from December- April and then again in June and July. 
+

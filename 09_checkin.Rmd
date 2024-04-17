@@ -1,0 +1,52 @@
+---
+title: "Check-in 9"
+author: "Shubhu Shahade"
+date: "2023-11-08"
+date-format: "[Due] MMMM DD, YYYY"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+1. (Devore Section 7.2 #5) Assume that the helium porosity (in percentage) of coal samples taken from any particular seam is normally distributed with true standard deviation .75. Compute a 90% CI for the true average porosity of a certain seam if the average porosity for 20 specimens from the seam was 4.85.
+```{r}
+# Given values
+sample_mean <- 4.85
+sample_size <- 20
+true_standard_deviation <- 0.75
+confidence_level <- 0.90
+
+
+df <- sample_size - 1
+
+margin_of_error <- qt((1 + confidence_level) / 2, df) * (true_standard_deviation / sqrt(sample_size))
+confidence_interval <- c(sample_mean - margin_of_error, sample_mean + margin_of_error)
+confidence_interval
+```
+
+2. The `trees` data set provides measurements for a sample of 31 felled black cherry trees. Based on this sample, create a 95% confidence interval for the population mean girth. You may use the command `data(trees)` to download this data.
+```{r}
+data(trees)
+#head(trees)
+
+# Given values
+sample_mean <- mean(trees$Girth)
+sample_size <- length(trees$Girth)
+confidence_level <- 0.95 
+
+# Degrees of freedom for a t-distribution
+df <- sample_size - 1
+
+sample_sd <- sd(trees$Girth)
+margin_of_error <- qt((1 + confidence_level) / 2, df) * (sample_sd / sqrt(sample_size))
+confidence_interval <- c(sample_mean - margin_of_error, sample_mean + margin_of_error)
+confidence_interval
+```

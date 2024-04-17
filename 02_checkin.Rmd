@@ -1,0 +1,58 @@
+---
+title: "Check-in 2"
+author: "Shubhu Shahade"
+date: "2023-08-28"
+output: html_document
+---
+
+You should edit this .Rmd using RStudio, then click *Render* in the menu bar of the Source window (above the text of this .Rmd). Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit!
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+## A. Functions
+
+Work with one or two other students,
+
+**1.** In words, what does the following line of code do?
+
+```{r, eval = T}
+sample(1:6, 1)
+```
+
+It prints a random number between 1 and 6.
+
+**2.** Run the line of code in RStudio. What do you get? What did your groupmates get? What happens to the result each time you knit the document?
+
+6 was printed as result. A different outcome between 1-6 is printed every time I knit the document.  
+
+**3.** Below, we introduce the `set.seed` function. What do the two lines of code below do? What does the `456` mean? What happens to the result each time you knit the document?
+
+```{r, eval = T}
+set.seed(456)
+sample(1:6, 1)
+```
+
+<!-- REPLACE THIS LINE WITH YOUR ANSWER --> The number 5 is printed each time I knit the document. It is because of the set.seed function. When we use the function, we always get a fixed value as output no matter what the input is. 456 doesn't really mean anything here. It is just a constant value that is being passed as a parameter over here.  
+
+## B. Vectors and Matrices
+
+**4.** Write a line of code to generate a vector of length 100 whose entries are 1, 2, ..., 100.
+
+```{r, eval = T}
+c(seq(1, 100))
+```
+
+**5.** Write a line of code to generate the following matrix:
+
+`1 2 3`
+
+`4 5 6`
+
+`7 8 9`
+
+```{r, eval = T}
+ my_matrix <- matrix(1:9, nrow = 3, byrow = TRUE)
+my_matrix
+```

@@ -1,0 +1,91 @@
+---
+title: "Lab 6"
+author: "Shubhu Shahade"
+date: "2023-10-11"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+### Collaborators
+
+## A. Basic functions
+
+1. Write a function `is_even()` that takes as input a single integer `x` and returns a logical that represents whether `x` is an even number or not. This function should check to make sure the input is an integer. If the input is not an integer, the function should stop with an informative error message.
+2. Evaluate your function with even integer input.
+3. Evaluate your function with odd numeric input.
+4. Trigger your custom error message. Note: You will need to add the chunk option `error = TRUE` to your R Markdown code chunk. If you do not, your document will not compile.
+5. Write a function `get_factors()` that takes a single positive integer input `x` and outputs all of its factors as a vector. For example, since 10 is divisible by 1, 2, 5, and 10 itself, `get_factors(10)` should return a numeric vector containing 1, 2, 5, and 10.
+
+```{r error = TRUE} 
+is_even <- function(x) {
+  if (!is.numeric(x)) {
+    stop("Input is not a numeric value.")
+  }
+  if (round(x) != x) {
+    stop("Input is not an integer.")
+  }
+  return(x %% 2 == 0)
+}
+
+is_even(4) 
+is_even(5) 
+is_even("string") 
+is_even(3.14) 
+```
+
+```{r error = TRUE}
+get_factors <- function(x) {
+  if (x <= 0 || !is.numeric(x) || round(x) != x) {
+    stop("Input must be a positive integer.")
+  }
+  
+  factors <- c()
+  for (i in 1:x) {
+    if (x %% i == 0) {
+      factors <- c(factors, i)
+    }
+  }
+  
+  return(factors)
+}
+
+get_factors(16) 
+get_factors(49) 
+get_factors(13)  
+```
+
+## B. Thresholding functions
+
+6. The hard-threshold function is defined as
+
+$$f_\lambda(x) =\begin{cases}
+x & |x|\geq \lambda\\
+0 & |x|<\lambda
+\end{cases}$$
+
+Write an R function that takes two arguments as input: a numeric input `x` and a threshold `lambda`. Your function should return the value of $f_\lambda(x)$ and work for vector input `x` of any length.
+7. For $\lambda=4$, demonstrate your function on the vector c(-5, -3, 0, 3, 5).
+(Hint: the output should be the vector `-5, 0, 0, 0, 5`)
+8. For $\lambda=2$,  demonstrate your function on the vector c(-7, -5, -3, 0, 3, 5, 7).
+```{r}
+hard_threshold <- function(x, lambda) {
+  result <- ifelse(abs(x) >= lambda, x, 0)
+  return(result)
+}
+
+# Demonstration for lambda = 4 and c(-5, -3, 0, 3, 5)
+lambda_1 <- 4
+vector_1 <- c(-5, -3, 0, 3, 5)
+result_1 <- hard_threshold(vector_1, lambda_1)
+cat(result_1 ,"\n")
+
+# Demonstration for lambda = 2 and c(-7, -5, -3, 0, 3, 5, 7)
+lambda_2 <- 2
+vector_2 <- c(-7, -5, -3, 0, 3, 5, 7)
+result_2 <- hard_threshold(vector_2, lambda_2)
+cat(result_2)
+
+```

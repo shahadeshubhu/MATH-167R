@@ -1,0 +1,115 @@
+---
+title: "Check-in 10"
+author: "Shubhu Shahade"
+date: "2023-11-06"
+date-format: "[Due] MMMM DD, YYYY"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+
+## Part 1. Training and Test Error (10 points)
+
+Use the following code to generate data:
+```{r, message = FALSE}
+library(ggplot2)
+# generate data
+set.seed(302)
+n <- 30
+x <- sort(runif(n, -3, 3))
+y <- 2*x + 2*rnorm(n)
+x_test <- sort(runif(n, -3, 3))
+y_test <- 2*x_test + 2*rnorm(n)
+df_train <- data.frame("x" = x, "y" = y)
+df_test <- data.frame("x" = x_test, "y" = y_test)
+
+# store a theme
+my_theme <- theme_bw(base_size = 16) + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5))
+
+# generate plots
+g_train <- ggplot(df_train, aes(x = x, y = y)) + geom_point() +
+  xlim(-3, 3) + ylim(min(y, y_test), max(y, y_test)) + 
+  labs(title = "Training Data") + my_theme
+g_test <- ggplot(df_test, aes(x = x, y = y)) + geom_point() +
+  xlim(-3, 3) + ylim(min(y, y_test), max(y, y_test)) + 
+  labs(title = "Test Data") + my_theme
+g_train
+g_test
+```
+
+**1a.** For $k = 1$ and $k = 5$, fit a degree-k polynomial linear regression model with `y` as the response and `x` as the explanatory variable(s).
+(*Hint: Use *`poly()`*, as in the lecture slides.*)
+```{r}
+# Function to fit a polynomial regression model and calculate errors
+fit_and_evaluate <- function(k, df_train, df_test) {
+  # Fit polynomial regression model
+  model <- lm(y ~ poly(x, k), data = df_train)
+  
+  # Predict on training set
+  y_train_pred <- predict(model, newdata = df_train)
+  
+  # Calculate training error
+  train_error <- mean((df_train$y - y_train_pred)^2)
+  
+  # Predict on test set
+  #y_test_pred <- predict(model, newdata = df_test)
+  y_test_pred <- predict(model, newdata = data.frame("x" = x_test))
+  
+  # Calculate test error
+  test_error <- mean((df_test$y - y_test_pred)^2)
+  
+  return(list("model" = model, "train_error" = train_error, "test_error" = test_error, "Prediction" = y_test_pred))
+}
+
+# Fit models for k = 1 and k = 5
+model_k1 <- fit_and_evaluate(1, df_train, df_test)
+model_k5 <- fit_and_evaluate(5, df_train, df_test)
+```
+
+**1b.** For each model from (a), record the training error. Then predict `y_test` using `x_test` and also record the test error.
+```{r}
+cat("Model with k = 1:\n")
+cat("Training Error: ", model_k1$train_error, "\n")
+cat("Test Error: ", model_k1$test_error, "\n\n")
+cat("Prediction: ", model_k1$Prediction, "\n\n")
+
+cat("Model with k = 5:\n")
+cat("Training Error: ", model_k5$train_error, "\n")
+cat("Test Error: ", model_k5$test_error, "\n\n")
+cat("Prediction: ", model_k5$Prediction, "\n\n")
+```
+
+**1c.** If you were going to choose a model based on training error, which would you choose? Plot the data, colored by split. Add a line to the plot representing your selection for model fit. Add a subtitle to this plot with the (rounded!) test error.
+(*Hint: See Lecture Slides for example code.*)
+```{r}
+# Plot the data with model fits based on training error
+g_train + geom_smooth(method = "lm", formula = y ~ poly(x, 1), color = "red", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 5), color = "blue", se = FALSE) +
+  labs(subtitle = paste("Test Error (k=1):", round(model_k1$test_error), "\nTest Error (k=5):", round(model_k5$test_error)))
+```
+I'd choose the model with k = 5 since it's training error is lower when compared to k = 1. 
+
+
+**1d.** If you were going to choose a model based on test error, which would you choose? Plot the data, colored by split. Add a line to the plot representing your selection for model fit. Add a subtitle to this plot with the (rounded!) test error.
+```{r}
+# Plot the data with model fits based on test error
+g_test + geom_smooth(method = "lm", formula = y ~ poly(x, 1), color = "red", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 5), color = "blue", se = FALSE) +
+  labs(subtitle = paste("Test Error (k=1):", round(model_k1$test_error), "\nTest Error (k=5):", round(model_k5$test_error)))
+```
+
+I'd choose the model with k = 1 since it's testing error is less than the model with k = 5. 
+
+
+**1e.** What do you notice about the shape of the curves from part (d) and (e)? Which model do you think has lower bias? Lower variance? Why?
+
+In general, a model with lower complexity, such as a lower-degree polynomial, tends to have lower variance and higher bias. On the other hand, a model with higher complexity, such as a higher-degree polynomial, tends to have higher variance and lower bias. The model with k = 1  has lower variance and higher bias. The model with k = 5 has higher variance and lower bias.

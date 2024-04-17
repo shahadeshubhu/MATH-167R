@@ -1,0 +1,69 @@
+---
+title: "Check-in 8"
+author: "Shubhu Shahade"
+date: "2023-10-30"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+Quoc Luong Huynh
+
+INSERT NAMES OF ANY COLLABORATORS
+
+1. Write a function `sum_for_loop()`, that takes as input two vectors of length $n$, `x` and `y`, and returns the vector sum of `x` and `y` using a for loop of $n$ steps where the $i$th step involves adding `x[i]` and `y[i]`, Write a function `sum_vectorized()` that takes as input two vectors of length $n$, `x` and `y`, and computes the vector sum using the vectorized operator `x+y`.
+```{r}
+sum_for_loop <- function(x, y) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("Input vectors must be of the same length")
+  }
+  result <- numeric(n)  # Initialize the result vector
+
+  for (i in 1:n) {
+    result[i] <- x[i] + y[i]
+  }
+  return(result)
+}
+
+sum_vectorized <- function(x, y) {
+  if (length(x) != length(y)) {
+    stop("Input vectors must be of the same length")
+  }
+  result <- x + y  
+  return(result)
+}
+
+# Example data
+x <- c(1, 2, 3, 4, 5)
+y <- c(5, 4, 3, 2, 1)
+
+# Using sum_for_loop
+result_for_loop <- sum_for_loop(x, y)
+print(result_for_loop)
+
+# Using sum_vectorized
+result_vectorized <- sum_vectorized(x, y)
+print(result_vectorized)
+```
+
+
+2. Compare the speed of your two functions using one of the approaches discussed in class today.
+```{r}
+start_time_sum_vectorized <- Sys.time()
+sum_vectorized(x,y)
+print(Sys.time() - start_time_sum_vectorized)
+```
+
+```{r}
+start_time_for_loop <- Sys.time()
+sum_vectorized(x,y)
+print(Sys.time() - start_time_for_loop)
+```
+
+From the time difference, we can see that sum_vectorized function is faster approach. However, the speed of the functions keeps varying upon every run. However, the vectorized sum function was generally faster. 

@@ -1,0 +1,42 @@
+---
+title: "Check-in 7"
+author: "Shubhu Shahade"
+date: "2023-10-23"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+Use the following code to create a list of four matrices:
+
+```{r, echo = T, eval = T}
+set.seed(100)
+matrix_list <- list(
+  A = diag(5),
+  B = matrix(rnorm(9), nrow = 3, ncol = 3),
+  C = matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2),
+  D = diag(c(1:5))
+)
+```
+
+1. Use the `lapply` function to create a list of length four containing the inverse of these four matrices.
+```{r, echo = T, eval = T}
+inverse_matrix_list <- lapply(matrix_list, function(mat) solve(mat))
+inverse_matrix_list
+
+```
+
+2. Use the `sapply` function to create a vector of length four containing the determinants of these four matrices.
+```{r, echo = T, eval = T}
+determinants <- sapply(matrix_list, function(mat) det(mat))
+determinants
+
+```

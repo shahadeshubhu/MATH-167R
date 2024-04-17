@@ -1,0 +1,162 @@
+---
+title: "Lab 7"
+author: "Shubhu Shahade"
+date: "2023-10-18"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+library(dplyr)
+library(nycflights13)
+```
+
+## A. Skewness and Kurtosis
+
+Skewness describes how asymmetrical the distribution of a numerical variable is around its mean. Given observations $x_1,\ldots, x_n$, we can calculate the sample skewness $s$ of a variable using the following formula:
+
+$$s = \frac{\frac{1}{n}\sum\limits_{i=1}^n(x_i-\overline{x})^3}{\left[\frac{1}{n}\sum\limits_{i=1}^n(x_i-\overline{x})^2\right]^{3/2}}$$
+Kurtosis is a measure of the "tailedness" of the distribution of a numerical variable is around its mean. Higher values of kurtosis indicate more extreme outliers. Given observations $x_1,\ldots, x_n$, we can calculate the sample kurtosis $k$ of a variable using the following formula:
+
+$$k = \frac{\frac{1}{n}\sum\limits_{i=1}^n(x_i-\overline{x})^4}{\left[\frac{1}{n}\sum\limits_{i=1}^n(x_i-\overline{x})^2\right]^{2}}-3$$
+
+1. Write a function `skewness()` that takes as input a numeric vector `x` and returns the sample skewness. There are functions in R that compute skewness, but you cannot use any of them--write your own implementation.
+```{r}
+skewness <- function(x) {
+  n <- length(x)
+  if (n < 3) {
+    stop("Sample size should be at least 3 for skewness calculation.")
+  }
+
+  x_bar <- mean(x)
+
+  numerator <- sum((x - x_bar)^3) / n
+  denominator <- (sum((x - x_bar)^2) / n)^(3/2)
+
+  s <- numerator / denominator
+  
+  return(s)
+}
+
+x <- c(1, 2, 3, 4, 5)
+skew <- skewness(x)
+print(skew)
+
+```
+
+2. Write a function `kurtosis()` that takes as input a numeric vector `x` and returns the sample skewness. There are functions in R that compute kurtosis, but you cannot use any of them--write your own implementation.
+```{r}
+kurtosis <- function(x) {
+  n <- length(x)
+  if (n < 4) {
+    stop("Sample size must be at least 4 to calculate kurtosis")
+  }
+  
+  x_bar <- mean(x)
+  numerator <- sum((x - x_bar)^4) / n
+  denominator <- (sum((x - x_bar)^2) / n)^2
+    
+                
+  
+  k <- (numerator / denominator) - 3
+  return(k)
+}
+
+kurt <- kurtosis(x)
+print(kurt)
+
+```
+
+3. Use your function to compute the sample skewness of the `arr_delay` variable in the `flights` dataset contained in the `nycflights13` package.
+```{r}
+
+data(flights)
+flights
+```
+
+```{r}
+flights <- subset(flights, !is.na(arr_delay))
+skewness_result <- skewness(flights$arr_delay)
+skewness_result
+
+```
+
+
+4. Use your function to compute the sample kurtosis of the `arr_delay` variable in the `flights` dataset contained in the `nycflights13` package.
+```{r}
+kurtosis_result <- kurtosis(flights$arr_delay)
+
+print(kurtosis_result)
+
+```
+## B. Finding an error
+
+Suppose you have two teams of runners participating in a 5k. We wish to write a function that takes as input two vectors representing the times of the runners in each team and returns a list of two vectors representing the ranks of each team's runners.
+
+For example, if the first team's times are `c(16.8, 21.2, 19.1)` and the second team's times are `c(17.2, 18.1, 20.0)`, the function should return `c(1, 6, 4)` for the first team and `c(2, 3, 5)` for the second team. 
+
+Below is a draft version of the function `get_runner_ranks()`. However, there is an error somewhere. Use any method we discussed in class to identify the error.
+
+```{r, error = T, echo = T, eval = T}
+get_runner_ranks <- function(x, y) {
+  combined_times <- c(x, y) 
+  
+  
+  sort(combined_times, decreasing = T)
+  
+
+  ranks_x <- numeric(length(x))
+  ranks_y <- numeric(length(y))
+  
+  for (i in seq_along(ranks_x)) {
+    ranks_x[i] <- match(x[i], combined_times)
+  }
+  
+  for (i in seq_along(ranks_y)) {
+    ranks_y[i] <- match(y[i], combined_times)
+  }
+  
+
+  return(list(x = ranks_x, y = ranks_y))
+}
+```
+
+5. Below, write a corrected version of `get_runner_ranks()` and compute `get_runner_ranks(c(16.8, 21.2, 19.1), c(17.2, 18.1, 20.0))`.
+
+```{r, error = T, echo = T, eval = T}
+get_runner_ranks <- function(team1_times, team2_times) {
+
+  all_times <- c(team1_times, team2_times)
+  
+  
+  all_ranks <- rank(all_times)
+  
+  team1_ranks <- all_ranks[1:length(team1_times)]
+  team2_ranks <- all_ranks[(length(team1_times) + 1):length(all_times)]
+  
+  result <- list(Team1 = team1_ranks, Team2 = team2_ranks)
+  return(result)
+}
+
+team1_times <- c(16.8, 21.2, 19.1)
+team2_times <- c(17.2, 18.1, 20.0)
+
+ranks <- get_runner_ranks(team1_times, team2_times)
+print(ranks$Team1)  
+print(ranks$Team2)  
+
+```
+
+6. Explain in your own words what the error was.
+
+The error in the provided function is that the sort function is not saving the sorted vector. 
+The sort function returns the sorted vector, but it does not modify the original vector in place. 
+To fix the function, you should assign the result of sort to combined_times. 

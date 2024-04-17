@@ -1,0 +1,154 @@
+---
+title: "Lab 10"
+author: "Shubhu Shahade"
+date: 2023-11-29
+date-format: "[Due] MMMM DD, YYYY"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+```
+
+## A. Hypothesis Testing
+
+1. Use the following code to obtain the Hawaiian Airlines and Alaska Airlines flights from the `nycflights13` package.
+```{r, warning = F, message = F}
+library(tidyverse)
+library(nycflights13)
+data("flights")
+flights_sample <- flights |> 
+  filter(carrier %in% c("HA", "AS"))
+
+flights_sample
+```
+
+2. Compute a 95% confidence interval for the mean `arr_delay` for Alaska Airlines flights. Interpret your results.
+```{r}
+alaska_data <- subset(flights_sample, carrier == 'AS')
+
+
+mean_arr_delay <- mean(alaska_data$arr_delay, na.rm = TRUE)
+se_arr_delay <- sd(alaska_data$arr_delay, na.rm = TRUE) / sqrt(length(alaska_data$arr_delay))
+confidence_level <- 0.95
+margin_of_error <- qt((1 + confidence_level) / 2, df = length(alaska_data$arr_delay) - 1) * se_arr_delay
+confidence_interval <- c(mean_arr_delay - margin_of_error, mean_arr_delay + margin_of_error)
+
+cat("95% Confidence Interval for mean arr_delay for Alaska Airlines flights:", confidence_interval, "\n")
+```
+The interval represents the range of values within which the true mean `arr_delay` for Alaska Airlines flights is likely to fall with 95% confidence.This suggests that, on average, Alaska Airlines flights tend to arrive earlier than scheduled.
+
+
+3. Compute a 95% confidence interval for the mean `arr_delay` for Hawaiian Airlines flights. Interpret your results.
+```{r}
+hawaiian_data <- subset(flights_sample, carrier == 'HA')
+
+mean_arr_delay <- mean(hawaiian_data$arr_delay, na.rm = TRUE)
+se_arr_delay <- sd(hawaiian_data$arr_delay, na.rm = TRUE) / sqrt(length(hawaiian_data$arr_delay))
+margin_of_error <- qt((1 + confidence_level) / 2, df = length(hawaiian_data$arr_delay) - 1) * se_arr_delay
+confidence_interval <- c(mean_arr_delay - margin_of_error, mean_arr_delay + margin_of_error)
+
+cat("95% Confidence Interval for mean arr_delay for Hawaiian Airlines flights:", confidence_interval, "\n")
+```
+The interval represents the range of values within which the true mean `arr_delay` for Hawaiian Airlines flights is likely to fall with 95% confidence.This suggests that, on average, Hawaiian Airlines flights tend to arrive earlier than scheduled but are relatively late when compared to Alaskan airlines.
+
+
+4. Compute a 95% confidence interval for the proportion of flights for which `arr_delay > 0` for Hawaiian Airlines flights. Interpret your results.
+```{r}
+positive_delay <- subset(hawaiian_data, hawaiian_data$arr_delay > 0)
+
+mean_arr_delay <- mean(positive_delay$arr_delay, na.rm = TRUE)
+se_arr_delay <- sd(positive_delay$arr_delay, na.rm = TRUE) / sqrt(length(positive_delay$arr_delay))
+margin_of_error <- qt((1 + confidence_level) / 2, df = length(positive_delay$arr_delay) - 1) * se_arr_delay
+confidence_interval <- c(mean_arr_delay - margin_of_error, mean_arr_delay + margin_of_error)
+
+cat("95% Confidence Interval for flights with arr_delay greater than 0 :", confidence_interval, "\n")
+```
+The interval suggests that, on average, when Hawaiian Airlines flights are actually late, they tend to be very late with confidence intervals between 8 and 61 mins. 
+
+
+5. Consider the null hypothesis that the mean `arr_delay` for Alaska is equal to the mean `arr_delay` for Hawaiian and the alternative hypothesis that the mean `arr_delay` values are different for the two airlines. Perform an appropriate hypothesis test and interpret your results.
+```{r}
+t_test_result <- t.test(alaska_data$arr_delay, hawaiian_data$arr_delay, alternative = 'two.sided')
+
+cat("Test Statistic:", t_test_result$statistic, "\n")
+cat("P-value:", t_test_result$p.value, "\n")
+
+# Check if the null hypothesis is rejected based on a significance level (e.g., 0.05)
+if (t_test_result$p.value < 0.05) {
+  cat("Reject the null hypothesis. There is evidence that the mean arr_delay values are different for Alaska and Hawaiian Airlines.\n")
+} else {
+  cat("Fail to reject the null hypothesis. There is not enough evidence to conclude that the mean arr_delay values are different for Alaska and Hawaiian Airlines.\n")
+}
+```
+the test statistic being negative values typically suggest that the sample mean for Alaska is lower than the sample mean for Hawaiian. With a p-value of 0.4822024, which is higher than the typical significance level of 0.05, the statistical analysis does not provide strong evidence to support the alternative hypothesis that the mean `arr_delay` values are different for Alaska and Hawaiian Airlines. 
+
+## B. Linear Regression
+
+6. Researchers at the University of Texas in Austin, Texas tried to figure out what causes differences in instructor teaching evaluation scores. Use the following code to load data on 463 courses. A full description of the data can be found [here](https://www.openintro.org/book/statdata/?data=evals).
+```{r, warning = F, message = F}
+evals <- readr::read_csv("https://www.openintro.org/book/statdata/evals.csv")
+evals
+```
+
+
+7. Carry out a linear regression with `score` as the response variable and `age` as the single explanatory variable. Interpret your results.
+```{r}
+linear_model <- lm(evals$score ~ evals$age, data = evals)
+summary(linear_model)
+```
+The t-value for the coefficient of `age` is -2.311, and the corresponding p-value is 0.0213. The `*` next to the p-value indicates that this coefficient is statistically significant at the 0.05 significance level. The statistical significance suggests that there is evidence to reject the null hypothesis that the true coefficient for `age` is zero, i.e. the age appears to have a statistically significant effect on the `score`. The linear regression model suggests that, on average, as `age` increases, the `score` decreases. 
+
+
+8. Extend your regression model by adding an additional explanatory variable. What happens to your results? Are the new $p$-values appropriate to use?
+```{r}
+extended_model <- lm(score ~ age + cls_did_eval, data = evals)
+summary(extended_model)
+```
+The coefficient for `age` is approximately -0.0058375, which means, on average, for each additional unit increase in `age`, the `score` is expected to decrease by approximately 0.0058375 units. The coefficient for `cls_did_eval` is approximately 0.0007202.The positive sign suggests that, on average, having `cls_did_eval` is associated with a slight increase in `score`. The small p-value suggests that at least one of the predictors is related to the response variable.In this case, the p-value for Age is less than 0.05, suggesting it is statistically significant. However, the p-value for Cls_did_eval is greater than 0.05, indicating it may not be statistically significant.
+
+
+## C. Power simulation
+
+9. For this question, you will write a simulation to estimate the power of a one-sample $t$-test for a population mean for varying effect sizes, $\alpha$, and sample sizes. In particular, assume that we are testing the hypotheses $H_0: \mu = 0$ and $H_a: \mu \not=0$.
+
+    a. Write a function that takes four inputs: `mu`, `sigma`, `alpha`, and `n`. Your function should randomly simulate a sample of `n` normal random variables with mean `mu` and standard deviation `sigma` and then compute the appropriate test $t$-statistic, treating the mean and standard deviation as unknown. You should then compare your test statistic with a $t$ distribution and obtain the $P$-value of your hypothesis test. Based on `alpha`, return `TRUE` if the null hypothesis is rejected and `FALSE` if the null hypothesis is not rejected.
+    
+    b. Run your function 1000 times to estimate the power when `mu = 1`, `sigma = 1`, `alpha = .05` and `n = 10`.
+  
+    c. Run your function 1000 times to estimate the power when `mu = 0.5`, `sigma = 1`, `alpha = .05` and `n = 10`. Compare with your results from (b).
+```{r}
+simulate_t_test <- function(mu, sigma, alpha, n) {
+  sample_data <- rnorm(n, mean = mu, sd = sigma)
+
+  t_stat <- (mean(sample_data) - 0) / (sd(sample_data) / sqrt(n))
+  p_value <- 2 * pt(-abs(t_stat), df = n - 1)  # Two-tailed test
+  reject_null <- p_value < alpha
+  return(reject_null)
+}
+
+mu1 <- 1
+sigma1 <- 1
+alpha1 <- 0.05
+n1 <- 10
+
+mu2 <- 0.5
+sigma2 <- 1
+alpha2 <- 0.05
+n2 <- 10
+
+set.seed(123)  
+power_estimate1 <- mean(replicate(1000, simulate_t_test(mu1, sigma1, alpha1, n1)))
+power_estimate2 <- mean(replicate(1000, simulate_t_test(mu2, sigma2, alpha2, n2)))
+
+cat("Power estimate for mu = 1:", power_estimate1, "\n")
+cat("Power estimate for mu = 0.5:", power_estimate2, "\n")
+```
+The power estimate of 0.8 (or 80%) indicates that when the true population mean is 1 (as per the alternative hypothesis), the test correctly rejects the null hypothesis (which assumes a mean of 0) in approximately 80% of the simulated samples. This suggests that the test has good sensitivity to detect a true effect when it exists. The power estimate of 0.286 (or 28.6%) for mu = 0.5 indicates that when the true population mean is 0.5, the test has a lower probability of correctly rejecting the null hypothesis. A smaller effect size makes it more challenging to distinguish from the null hypothesis, leading to lower power. In this case, the test is less sensitive to detecting a true effect when the effect size is smaller.Larger effect sizes generally result in higher power, while smaller effect sizes lead to lower power. 

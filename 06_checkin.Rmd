@@ -1,0 +1,50 @@
+---
+title: "Check-in 6"
+author: "Shubhu Shahade"
+date: "2023-10-16"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+### Collaborators
+
+Given a vector $\mathbf{x}=(x_1,\ldots, x_n)$ and a number $p\geq 1$, the vector p-norm is defined as
+
+$$||\mathbf{x}||_p=(|x_1|^p+\cdots+|x_n|^p)^{1/p}$$
+
+For example, the vector 2-norm is given by
+
+$$||\mathbf{x}||_2=(|x_1|^2+\cdots+|x_n|^2)^{1/2}$$
+
+Consider the following code.
+
+```{r, eval = T, echo = T}
+create_p_norm <- function(p = 2) {
+  return(
+    function(x) return(sum(abs(x) ^ p) ^ (1 / p))
+  )
+}
+```
+
+1. Explain in your own words what the following code does:
+
+```{r, eval = T, echo = T}
+norm_1 <- create_p_norm(1)
+x <- c(-1, 1, 2)
+norm_1(x)
+```
+The first code snippet defines a function `create_p_norm` in R, which takes an optional parameter `p` (default value is 2). This function is designed to create and return another function, which calculates the p-norm of a given vector. The p-norm is computed as the sum of the absolute values of each element of the vector raised to the power of 'p', and then taking the 'p'th root of the sum. 
+In the code that follows, it first creates a specific function `norm_1` for the 1-norm (Manhattan norm). It then creates a vector `x` with values (-1, 1, 2) and calculates the 1-norm of this vector using `norm_1(x)`. The result is the sum of the absolute values of the elements in the vector `x`, which is 4 in this case.
+
+2. Explain in your own words what the following code does:
+
+```{r, eval = T, echo = T}
+p <- 3
+norm_mystery <- create_p_norm()
+x <- c(-1, 1, 2)
+norm_mystery(x)
+```
+The provided R code assigns a value of `3` to `p` but then creates a function `norm_mystery` using the `create_p_norm()` function with no specific value of `p` given, thus using the default `p` of `2`. It defines a vector `x` with values `c(-1, 1, 2)` and calculates the 2-norm (Euclidean norm) of this vector, despite the intended value of `p` being `3`. This is because the `create_p_norm()` function creates a function for the 2-norm due to the default `p` value, so it computes the square root of the sum of the squares of the absolute values of `x`, resulting in the square root of 6 as the output.

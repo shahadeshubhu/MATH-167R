@@ -1,0 +1,120 @@
+---
+title: "Lab 8"
+author: "Shubhu Shahade"
+date: "2023-10-18"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+library(ggplot2)
+```
+## A. Writing a simulation.
+
+Suppose $X_i\sim \mathrm{N}(0, 1)$ for $1\leq i\leq n$, for some $n$. 
+
+1. For $n=10, 20, 40, 80, 160, 320, 640, 1280$, carry out a simulation to estimate $E(\mathrm{max}(X_1,\ldots, X_n))$. For each value of $n$, simulate 1000 values of $\mathrm{max}(X_1,\ldots, X_n)$ and compute their mean. Store these means in a vector.
+```{r}
+n_values <- c(10, 20, 40, 80, 160, 320, 640, 1280)
+n_simulations <- 1000
+
+means <- numeric(length(n_values))
+set.seed(123)
+
+# Perform simulations for each value of n
+for (i in 1:length(n_values)) {
+  n <- n_values[i]
+  max_values <- replicate(n_simulations, max(rnorm(n)))
+  means[i] <- mean(max_values)
+}
+
+cat("Estimated Means:\n")
+print(means)
+```
+
+
+2. Create a line graph with $n$ on the x-axis and your simulation-based estimates of $E(\mathrm{max}(X_1,\ldots, X_n))$ on the y-axis. Comment on your findings. Does there seem to be an upper limit of $E(\mathrm{max}(X_1,\ldots, X_n))$?
+```{r}
+data <- data.frame(n = n_values, estimate = means)
+
+# Create the line graph
+ggplot(data, aes(x = n, y = estimate)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "n", y = "Estimate of E(max(X_1, ..., X_n))") +
+  ggtitle("Simulation-based Estimates of E(max(X_1, ..., X_n))") +
+  theme_minimal()
+```
+Yes there seems to be an upper limit. The value tends to reach 3.5 but never reaches 3.5 
+
+## B. One-dimensional random walks
+
+In this part, you will simulate a one-dimensional random walk. Suppose you are at the point $x$ at time $t$. At time $t+1$, the probability of moving forwards to $x+1$ is $p$ and the chance of moving backwards to $x-1$ is $1-p$. Assume that at time $t=1$, you are at $x_1=0$.
+
+3. Write a function `random_walk()` that takes as input a numeric `n_steps` and a numeric $p$ and simulates `n_steps` steps of the one-dimensional random walk with forward probability $p$. You may have other input arguments if desired. The output should be a length vector of length `n_steps` starting with 0 where the $i$th entry represents the location of the random walker at time $t=i$. For example, `random_walk(5, .5)` may return the vector $(0, 1, 2, 1, 2)$. 
+```{r}
+random_walk <- function(n_steps, p) {
+  positions <- numeric(n_steps + 1)
+  positions[1] <- 0
+  
+  # Simulate the random walk
+  for (i in 1:n_steps) {
+    # Generate a random number to decide whether to move forward or backward
+    move <- ifelse(runif(1) < p, 1, -1)
+    positions[i + 1] <- positions[i] + move
+  }
+  
+  return(positions)
+}
+```
+
+
+4. Use your function to generate a random walk of 500 steps with probability $.6$ and generate a line graph with $t=0,1,\ldots, 100$ on the x-axis and $x_0,\ldots, x_{100}$ on the y-axis.
+```{r}
+n_steps <- 500
+p <- 0.6
+random_walk_data <- random_walk(n_steps, p)
+
+t_values <- 0:100
+x_values <- random_walk_data[1:101]
+
+# Create a data frame for plotting
+walk_data <- data.frame(t = t_values, x = x_values)
+
+# Create the line graph
+ggplot(walk_data, aes(x = t, y = x)) +
+  geom_line() +
+  labs(x = "Time (t)", y = "Position (x)") +
+  ggtitle("Random Walk with Forward Probability 0.6") +
+  theme_minimal()
+```
+
+
+5. Use your function to generate two more random walks of 500 steps with probability $.6$ and create a line graph with all three of your random walks, using different colors for each walk.
+```{r}
+random_walk1 <- random_walk(n_steps, p)
+random_walk2 <- random_walk(n_steps, p)
+random_walk3 <- random_walk(n_steps, p)
+
+# Create a data frame for plotting
+walk_data <- data.frame(
+  t = rep(0:n_steps, 3),  
+  x = c(random_walk1, random_walk2, random_walk3),  
+  Walk = rep(1:3, each = n_steps + 1)  
+)
+
+# Create the line graph 
+ggplot(walk_data, aes(x = t, y = x, color = factor(Walk))) +
+  geom_line() +
+  labs(x = "Time (t)", y = "Position (x)") +
+  ggtitle("Three Random Walks with Forward Probability 0.6") +
+  theme_minimal()
+```

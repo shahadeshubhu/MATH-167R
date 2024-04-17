@@ -1,0 +1,145 @@
+---
+title: "Lab 9"
+author: "Shubhu Shahade"
+date: 2023-11-15
+date-format: "[Due] MMMM DD, YYYY"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+```{r}
+library(palmerpenguins)
+```
+
+
+## A. Bootstrapping the sampling distribution of the median
+
+1. Using the `penguins` dataset in the `palmerpenguins` package, construct a confidence interval for the mean `body_mass_g` for female Adelie penguins based on using a normal distribution based on the central limit theorem. You should compute the confidence interval without using `confint()`.
+```{r}
+data(penguins)
+palmerpenguins::penguins
+head(penguins)
+
+confidence_level <- 0.95
+adelie_females <- subset(penguins, species == "Adelie" & sex == "female")
+body_mass_data <- adelie_females$body_mass_g
+
+mean_body_mass <- mean(body_mass_data)
+standard_error <- sd(body_mass_data) / sqrt(length(body_mass_data))
+z_value <- qnorm((1 + confidence_level) / 2)
+margin_of_error <- z_value * standard_error
+confidence_interval <- c(mean_body_mass - margin_of_error, mean_body_mass + margin_of_error)
+
+cat("Mean Body Mass:", mean_body_mass, "\n")
+cat("Confidence Interval (", confidence_level * 100, "%): [", confidence_interval[1], ", ", confidence_interval[2], "]\n")
+```
+
+2. Construct a bootstrap confidence interval for the mean `body_mass_g` for female Adelie penguins using 10000 resamples.
+```{r}
+set.seed(123)
+n_resamples <- 10000
+resampled_means <- numeric(n_resamples)
+
+
+for (i in 1:n_resamples) {
+  # Sample with replacement from the original data
+  resample_data <- sample(adelie_females$body_mass_g, replace = TRUE)
+  resampled_means[i] <- mean(resample_data)
+}
+
+confidence_interval <- quantile(resampled_means, c(0.025, 0.975))
+cat("Bootstrap Confidence Interval (95%): [", confidence_interval[1], ", ", confidence_interval[2], "]\n")
+```
+
+3. Construct a bootstrap confidence interval for the median `body_mass_g` for female Adelie penguins using 10000 resamples.
+```{r}
+resampled_medians <- numeric(n_resamples)
+
+for (i in 1:n_resamples) {
+  resample_data <- sample(adelie_females$body_mass_g, replace = TRUE)
+  resampled_medians[i] <- median(resample_data)
+}
+
+confidence_interval <- quantile(resampled_medians, c(0.025, 0.975))
+cat("Bootstrap Confidence Interval (95%) for Median: [", confidence_interval[1], ", ", confidence_interval[2], "]\n")
+```
+
+## B. Simulations
+
+4. Suppose that $Y\sim \mathrm{Poisson}(X)$ where $X\sim \mathrm{Exponential}(1)$. Use simulation to estimate $E(Y)$ and $\mathrm{Var}(Y)$.
+```{r}
+set.seed(123)
+n_simulations <- 10000
+
+X <- rexp(n_simulations, rate = 1)
+Y <- rpois(n_simulations, lambda = X)
+
+
+mean_Y <- mean(Y)
+var_Y <- var(Y)
+
+cat("Estimated E(Y):", mean_Y, "\n")
+cat("Estimated Var(Y):", var_Y, "\n")
+```
+
+5. For this question, you will write a simulation to test the frequentist coverage of a 95\% confidence interval for a proportion based on the normal approximation. 
+
+    a. First, write a function that takes two inputs: `n` and `p`. Your function should randomly generate some $X\sim \mathrm{Binomial}(n, p)$, compute $\widehat{p}= X/n$, and then compute the corresponding normal distribution-based confidence interval for $p$ **based on your sample** $\widehat{p}$. Your function should return `TRUE` if $p$ is in the confidence interval. You may use the following formula for the confidence interval:
+    
+    $$\widehat{p}\pm z_{.975}\sqrt{\frac{\widehat{p}(1-\widehat{p})}{n}}$$
+        
+    b. Next, write a second function that takes three inputs: `n`, `p`, and `n_runs`, representing the number of times to run your simulation. This function should use your function from (a) to simulate `n_runs` binomial random variables and return the proportion of the `n_runs` for which $p$ is contained in the confidence interval.
+    
+    c. Test your function from (b) with `n = 20`, `p = .5`, and `n_runs = 1000`.
+    
+    d. Use your simulation code to investigate the following questions: For what values of `n` and `p` is the frequentist coverage close to the expected 95\% value? For what values of `n` and `p` is the frequentist coverage very different to the expected 95\% value?
+
+```{r}
+# Function to generate a confidence interval and check if p is within the interval
+calculate_coverage <- function(n, p) {
+  X <- rbinom(1, n, p)
+  
+  # Calculate the sample proportion
+  phat <- X / n
+  
+  margin_of_error <- qnorm(0.975) * sqrt(phat * (1 - phat) / n)
+  confidence_interval <- c(phat - margin_of_error, phat + margin_of_error)
+  
+  # Check if p is within the confidence interval
+  p_in_interval <- p >= confidence_interval[1] & p <= confidence_interval[2]
+  return(p_in_interval)
+}
+
+# Function to run the simulation and calculate coverage proportion
+run_simulation <- function(n, p, n_runs) {
+  results <- replicate(n_runs, calculate_coverage(n, p))
+  coverage_proportion <- mean(results)
+  
+  return(coverage_proportion)
+}
+
+coverage_proportion <- run_simulation(20, 0.5, 1000)
+cat("Coverage Proportion:", coverage_proportion, "\n")
+```
+
+```{r}
+n_values <- c(10, 50, 100)
+p_values <- c(0.2, 0.5, 0.8)
+
+for (n in n_values) {
+  for (p in p_values) {
+    coverage_proportion <- run_simulation(n, p, 1000)
+    cat("n =", n, ", p =", p, ", Coverage Proportion:", coverage_proportion, "\n")
+  }
+}
+```
+
+For values n = '50' and p = '0.5', the frequentist coverage is the closest to the expected 95% value. 
+For values n = '10' and p = '0.5', the frequentist coverage is the very different to the expected 95% value. 

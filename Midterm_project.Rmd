@@ -1,0 +1,149 @@
+---
+title: "Midterm Project"
+author: "Shubhu Shahade"
+date: "2023-10-04"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+## A. Analyzing trends in San Jose rental prices 
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+#install.packages("readr")
+#install.packages("curl")
+library(ggplot2)
+library(dplyr)
+rent <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-07-05/rent.csv')
+rent
+```
+
+
+1. How many 1 bedroom listings from Santa Clara county are in this dataset?
+```{r}
+sc_county_1bed <- subset(rent,county == "santa clara" & beds == 1)
+print(nrow(sc_county_1bed))
+```
+Santa Clara county has 12455 1 bedroom listings. 
+
+
+2. What is the median price for a 1 bedroom listing in Santa Clara county in 2018?
+```{r}
+#rent <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-07-05/rent.csv')
+sc_county_1bed_2018 <- subset(sc_county_1bed, year == 2018)
+median_value_sc_county_1bed_2018 <- median(sc_county_1bed_2018$price)
+print(median_value_sc_county_1bed_2018)
+```
+The median value for 1 bedroom listings in Santa Clara county in 2018 was $2095.
+
+
+3. Which county has the highest median price for a 1 bedroom listing in 2018?
+```{r}
+one_bed_2018 <- subset(rent, beds == 1 & year == 2018)
+highest_median_2018_county <- aggregate(one_bed_2018$price, list(one_bed_2018$county), FUN=median, na.rm = TRUE)
+print(highest_median_2018_county$Group.1[highest_median_2018_county$x == max(highest_median_2018_county$x)])
+```
+San Francisco county had the highest median price for a 1 bedroom listing in 2018  
+
+
+4. Create two histograms for the prices of 1 bedroom listings in Santa Clara county in 2005 and 2018. Compare and discuss.
+```{r}
+filtered_data <- sc_county_1bed %>%
+  filter(year %in% c(2005, 2018))
+
+# Create separate histograms for 2005 and 2018
+ggplot(filtered_data, aes(x = price, fill = as.factor(year))) +
+  geom_histogram(binwidth = 100, position = "identity", alpha = 0.5) +
+  labs(x = "Price", y = "Frequency") +
+  ggtitle("Histograms of 1-Bedroom Listing Prices in Santa Clara County (2005 vs. 2018)") +
+  scale_fill_manual(values = c("2005" = "blue", "2018" = "red")) +
+  theme_minimal()
+```
+The number of listings for 1 bedroom in Santa Clara County were much higher and the prices were much lower when we compare the year 2005 with 2018. The changes in prices could be a reflection of rising prices overtime. 
+
+
+5. Create and interpret a line plot with year on the x-axis and median price for a 1 bedroom apartment for Santa Clara county on the y-axis from 2000 to 2018. 
+```{r}
+one_bed_sc_county_overtime <- sc_county_1bed %>%
+  filter(year >= 2000 & year <= 2018)
+
+median_prices_sc_county <- one_bed_sc_county_overtime %>%
+  group_by(year) %>%
+  summarise(median_price = median(price))
+
+ggplot(median_prices_sc_county, aes(x = year, y = median_price)) +
+  geom_line() +
+  labs(x = "Year", y = "Median Price") +
+  ggtitle("Median Price for 1-Bedroom Apartment in Santa Clara County")
+
+```
+From the lineplot, we can see that the median price for 1 bedroom listing in Santa Clara county has steadily rose till 2017 and then started declining. It was relatively stable during the periods between 2007- 2010 but then followed a sharp upward trend. 
+
+
+6. Create and interpret a single plot with year on the x-axis and median price for a 1 bedroom apartment on the y-axis, using a separate line for each city in Santa Clara county, for the years 2000 to 2018. 
+```{r}
+median_prices_by_city_sc <- one_bed_sc_county_overtime %>%
+  group_by(year, city) %>%
+  summarise(median_price = median(price))
+
+ggplot(median_prices_by_city_sc, aes(x = year, y = median_price, color = city)) +
+  geom_line() +
+  labs(x = "Year", y = "Median Price") +
+  ggtitle("Median Price for 1-Bedroom Apartment in Santa Clara County (2000-2018)")
+```
+From the graph, we can see that the prices for most of the cities follow a similar pattern. The median prices for most of the cities rose over time till 2015 and then followed a period of decline till 2018. Gilroy seemed to have an inverse relationship with the other cities until 2014. Median prices are very high for cities like Palo Alto, Los Altos and Los Gatos. 
+
+
+## B. Open ended data visualization
+
+1. What is the relationship between rental prices and number of bedrooms for different cities in Santa Clara county? 
+```{r}
+santa_clara_data <- rent %>%
+  filter(county == "santa clara")
+
+ggplot(santa_clara_data, aes(x = beds, y = price, color = city)) +
+  geom_point() +
+  labs(x = "Number of Beds", y = "Rental Price") +
+  ggtitle("Rental Prices by bedrooms and cities in Santa Clara County")
+```
+From the plot we can see that rental prices are relatively higher in some cities like Palo Alto, Los Altos, Los Gatos and a few places in Saratoga. Cities like Cambrian, Cupertino, San Jose and Santa Clara have tons of listings for relatively lower prices varying from 0 bedrooms to 6 bedrooms. There's only a few listings with 6 or more bedrooms and they're majorly from San Jose, Los Altos and Palo Alto. 
+
+
+
+2. How would you compare the relationship between median price and median square feet of the rental listings by each county? 
+```{r}
+# Calculate median square footage and median price by county
+median_data <- rent %>%
+  group_by(county) %>%
+  summarise(median_sqft = median(sqft, na.rm = TRUE),
+            median_price = median(price, na.rm = TRUE))
+
+# Create a scatterplot of median square footage vs. median price by county
+ggplot(median_data, aes(x = median_sqft, y = median_price, label = county)) +
+  geom_point() +
+  geom_text(hjust = 0.5, vjust = -0.5) +
+  labs(x = "Median Square Feet", y = "Median Price") +
+  ggtitle("Median Square Feet vs. Median Price by County")
+```
+From the scatter plot, we can see that San Francisco, Marin and Santa Cruz counties are some of the most expensive and yet some of the tiniest places to live in. Counties like Napa have the maximum square footage but aren't too expensive to rent. Solano county is the cheapest of all bay area rentals while having properties with squarefootage not too big, nor too small.
+
+
+
+3. How would you describe the number of rental listings for different counties over the years?  
+```{r}
+# Group the data by 'county' and 'year' and count the number of listings
+listing_counts <- rent %>%
+  group_by(county, year) %>%
+  summarise(count = n())
+
+# Create a line plot of the count of listings over the years by county
+ggplot(listing_counts, aes(x = year, y = count, color = county)) +
+  geom_line() +
+  labs(x = "Year", y = "Count of Listings") +
+  ggtitle("Count of Listings by County Over the Years") +
+  theme_minimal()
+```
+From the line chart, we can see that San Francisco had a really high number of rental listings in the year 2004. other counties like Santa Clara and San Mateo also have a high number of rental listings. The least number of listings were observed in the months around 2008 and 2009. This must have to be in relation to the housing market collapse in 2008. We can see that rental listings are otherwise pretty cyclical and all counties follow a very similar cycle of ups and downs.  

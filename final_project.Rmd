@@ -1,0 +1,132 @@
+---
+title: "Final project"
+output: html_document
+date: "2023-11-30"
+---
+```{r}
+library(dplyr)
+library(vcd)
+library(ggplot2)
+
+heart_data <- read.csv("heart_failure_clinical_records_dataset.csv")
+head(heart_data, 10)
+nrow(heart_data)
+```
+
+Univariate visualisation of categorical variable 
+```{r}
+ggplot(heart_data, aes(x = factor(sex))) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Sex",
+       x = "Sex",
+       y = "Count") +
+  scale_x_discrete(labels = c("Female", "Male")) +  # Customize x-axis labels
+  theme_minimal()
+```
+
+Univariate visualization of a numerical variable 
+```{r}
+ggplot(heart_data, aes(x = age)) +
+  geom_density(fill = "skyblue", color = "black") +
+  labs(title = "Density Plot of Age",
+       x = "Age") +
+  theme_minimal()
+```
+
+Research Question 1. 
+Is there a significant association between the presence of specific diseases such anaemia, diabetes, high blood pressure in patients and the occurrence of their death events?
+```{r}
+ailments_all <- heart_data %>%
+  select(anaemia, diabetes, high_blood_pressure, DEATH_EVENT)
+
+ailments <- ailments_all %>%
+  filter(DEATH_EVENT == 1)
+
+anaemia <- ailments %>%
+  filter(anaemia == 1, diabetes == 0, high_blood_pressure == 0)
+anaemia_count <- nrow(anaemia)
+
+diabetes <- ailments %>%
+  filter(anaemia == 0, diabetes == 1, high_blood_pressure == 0)
+diabetes_count <- nrow(diabetes)
+
+highbp <- ailments %>%
+  filter(anaemia == 0, diabetes == 0, high_blood_pressure == 1)
+highbp_count <- nrow(highbp)
+
+anaemia_and_diabetes <- ailments %>%
+  filter(anaemia == 1, diabetes == 1, high_blood_pressure == 0)
+anaemia_and_diabetes_count <- nrow(anaemia_and_diabetes)
+
+anaemia_and_highbp <- ailments %>%
+  filter(anaemia == 1, diabetes == 0, high_blood_pressure == 1)
+anaemia_and_highbp_count <- nrow(anaemia_and_highbp)
+
+diabetes_and_highbp <- ailments %>%
+  filter(anaemia == 0, diabetes == 1, high_blood_pressure == 1)
+diabetes_and_highbp_count <- nrow(diabetes_and_highbp)
+
+all_ailments <- ailments %>%
+  filter(anaemia == 1, diabetes == 1, high_blood_pressure == 1)
+all_ailments_count <- nrow(all_ailments)
+
+none_ailments <- ailments %>%
+  filter(anaemia == 0, diabetes == 0, high_blood_pressure == 0)
+none_ailments_count <- nrow(none_ailments)
+
+# Create a data frame
+df <- data.frame(
+  Ailment = c('Anaemia', 'Diabetes', 'High blood pressure', 'Anaemia & diabetes', 'Anaemia and high blood pressure', 'Diabetes and high blood pressure', 'All', 'None'),
+  count = c(anaemia_count, diabetes_count, highbp_count, anaemia_and_diabetes_count, anaemia_and_highbp_count, diabetes_and_highbp_count, all_ailments_count, none_ailments_count)
+)
+
+# Create a bar plot
+bargraph <- ggplot(df, aes(x = Ailment, y = count, fill = Ailment)) +
+  geom_bar(stat = 'identity') +
+  scale_fill_manual(values = c('lavender', 'blue', 'green', 'yellow', 'orange', 'pink', 'black', 'red')) +
+  labs(title = 'Bar plot showing count of patients suffering from ailments prior to death', x = 'Ailment', y = 'Count') +
+  theme_minimal()  + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+print(bargraph)
+```
+
+Research question 2 
+What is the impact of anaemia and high blood pressure on the risk of heart failure? Do patients with both anemia and high blood pressure face a greater risk of heart failure compared to individuals with each condition separately, and does this combination result in an additive effect?
+```{r}
+new_heart_data <- select(heart_data, anaemia, high_blood_pressure, DEATH_EVENT)
+
+new_heart_data$anaemia <- factor(new_heart_data$anaemia, levels = c(0, 1), labels = c("No", "Yes"))
+new_heart_data$high_blood_pressure <- factor(new_heart_data$high_blood_pressure, levels = c(0, 1), labels = c("No", "Yes"))
+new_heart_data$DEATH_EVENT <- factor(new_heart_data$DEATH_EVENT, levels = c("0", "1"), labels = c("Alive", "Dead"))
+
+# Create a mosaic plot
+mosaic(~ anaemia + high_blood_pressure + DEATH_EVENT, data = new_heart_data,labeling_args = list(gp_labels = gpar(fontsize = 8)), gp = gpar(fill = c("lightblue", "blue", "darkblue")))
+
+logistic_model <- glm(DEATH_EVENT ~ anaemia + high_blood_pressure + anaemia:high_blood_pressure, 
+                      family = binomial, data = new_heart_data)
+
+# View the summary of the model
+summary(logistic_model)
+```
+Coefficients:
+   - Intercept: The estimated log-odds of the death event when `Anaemia` and `High_Blood_Pressure` are both 0.
+   - anaemiaYes: The change in log-odds of the death event associated with the presence of anemia.
+   - high_blood_pressureYes: The change in log-odds of the death event associated with the presence of high blood pressure.
+   - anaemiaYes:high_blood_pressureYes: The change in log-odds of the death event associated with the interaction between anemia and high blood pressure.
+
+- The intercept represents the baseline log-odds of the death event when both `Anaemia` and `High_Blood_Pressure` are 0. The intercept and `high_blood_pressureYes` have low p-values (p < 0.05), suggesting they are statistically significant. However, `anaemiaYes` and the interaction term are not statistically significant.
+- Presence of high blood pressure (`high_blood_pressureYes`) is associated with an increase in the log-odds of the death event.
+- The interaction term (`anaemiaYes:high_blood_pressureYes`) is not statistically significant, suggesting that the combined effect of anemia and high blood pressure is not different from the sum of their individual effects.
+
+
+Research question 3
+Is there any association between ejection fraction and serum creatinine levels, and how do these changes influence the occurrence of death events in heart failure patients?
+```{r}
+# Visualize the relationship using scatter plots
+ggplot(heart_data, aes(x = ejection_fraction, y = serum_creatinine, color = as.factor(DEATH_EVENT))) +
+  geom_point() +
+  labs(title = "Relationship between Serum Creatinine and ejection Fraction for death event",
+       x = "Ejection Fraction",
+       y = "Serum Creatinine") +
+  scale_color_manual(values = c("blue", "red"), name = "Death Event") +
+  theme_minimal()
+```

@@ -1,0 +1,149 @@
+---
+title: "Lab 4"
+author: "Shubhu Shahade"
+date: "2023-09-13"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+INSERT NAMES OF ANY COLLABORATORS
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+library(ggplot2)
+library(dplyr)
+```
+
+## A. Penguins visualizations
+
+1.  For this lab, we'll be using the `palmerpenguins` data. Use the following code to load the data.
+
+```{r}
+library(palmerpenguins)
+data(penguins)
+palmerpenguins::penguins
+```
+
+2.  Create and interpret a histogram of `bill_length_mm` using base R code. Be sure to use meaningful axis labels and titles.
+
+```{r}
+# YOUR CODE HERE
+hist(penguins$bill_length_mm, 
+     main = "Histogram of bill length",           
+     xlab = "Bill length in mm",                    
+     ylab = "Count",                   
+     axes = TRUE                           
+)
+```
+
+Bill length varies but mostly between the values of 36- 52 mm. Maximum count is for values between 46-50 mm. 
+
+3.  Create and interpret a histogram of `bill_length_mm` using ggplot2. Be sure to use meaningful axis labels and titles.
+
+```{r}
+# YOUR CODE HERE
+ggplot(data = penguins, aes(x = penguins$bill_length_mm)) +
+  geom_histogram(binwidth = 5, fill = "lightblue", color = "black") +
+  labs(
+    title = "Histogram of bill length",
+    x = "Bill length",
+    y = "Count"
+  ) 
+```
+
+Bill length varies but mostly between the values of 36- 52 mm. Maximum count is for values between 38-52 mm.
+
+4.  Create and interpret a scatterplot of `bill_length_mm` versus `bill_depth_mm` using base R code. Be sure to use meaningful axis labels and titles.
+
+```{r}
+# YOUR CODE HERE
+plot(penguins$bill_length_mm, penguins$bill_depth_mm, 
+     main = "Scatterplot of bill length vs. bill depth",
+     xlab = "Bill length in mm",            
+     ylab = "Bill depth in mm",  
+)
+```
+
+Most penguins with shorter bill length have longer bill depth and vice versa. Some have long length and depth.  
+
+5. Create and interpret a scatterplot of `bill_length_mm` versus `bill_depth_mm` using ggplot2. Be sure to use meaningful axis labels and titles.
+
+```{r}
+# YOUR CODE HERE
+ggplot(data = penguins, aes(x = penguins$bill_length_mm, y = penguins$bill_depth_mm)) +
+  geom_point() +
+  labs(
+    title = "Scatterplot of bill length vs. bill depth",
+    x = "Bill length in mm",
+    y = "Bill depth in mm"
+  ) 
+```
+
+Most penguins with shorter bill length have longer bill depth and vice versa. Some have long length and depth. 
+
+6. Update your `ggplot2` scatterplot of `bill_length_mm` versus `bill_depth_mm` using ggplot2 so that the color of a point represents the corresponding penguin's species. What do you notice?
+
+```{r}
+# YOUR CODE HERE
+ggplot(data = penguins, aes(x = penguins$bill_length_mm, y = penguins$bill_depth_mm, color = penguins$species)) +
+  geom_point() +
+  labs(
+    title = "Scatterplot of bill length vs. bill depth",
+    x = "Bill length in mm",
+    y = "Bill depth in mm"
+  ) 
+```
+
+Gentoo penguins have short bill depth and average to long bill lengths. Chinstrap penguins have average bill lengths and bill depths. Adelie penguins have short bill lengths but high bill depths. 
+
+## B. Your choice of data
+
+7. Find and download a dataset from the Tidy Tuesday project (https://github.com/rfordatascience/tidytuesday). 
+
+```{r}
+# YOUR CODE HERE
+worldcups <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-11-29/worldcups.csv')
+worldcups
+```
+
+8. Create and interpret a univariate visualization for a variable of your choice. 
+
+```{r}
+# YOUR CODE HERE
+count_data <- worldcups %>%
+  group_by(worldcups$winner) %>%
+  summarise(Count = n())
+
+ggplot(count_data, aes(x = Count)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(
+    x = "World cups won by a country",
+    y = "Count of teams who won those many world cups"
+  )
+```
+
+Only 1 country each has won the world cup 3,4 and 5 times. 3 countries have won the world cup once and twice. 
+
+9. Create and interpret a multivariate visualization for a variable of your choice. 
+
+```{r}
+# YOUR CODE HERE
+ggplot(data = worldcups, aes(x = worldcups$games, y = worldcups$goals_scored)) +
+  geom_point(aes(color = worldcups$teams), size = 3) +
+  labs(
+    title = "Scatter Plot of number of games played and goals scored",
+    x = "Games played",
+    y = "Goals scored",
+    color = "Number of countries playing"
+  ) +
+  theme_minimal()
+```
+
+With more teams playing in the world cup, the number of games played increased and so did the number of goals. 

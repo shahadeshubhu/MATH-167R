@@ -1,0 +1,144 @@
+---
+title: "Lab 5"
+author: "Shubhu Shahade"
+date: "2023-09-20"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    code-summary: "Code"
+---
+
+Remember, you must submit *both* your .Rmd and the compiled .html in order to receive full credit! In addition, to receive full credit, your code output and plots must be correctly formatted.
+
+### Collaborators
+
+Thao Nguyen, Quoc Huynah, Shubhu Shahade  
+
+```{r}
+# LOAD ANY RELEVANT PACKAGES HERE
+library(readr)
+library(tidyverse)
+```
+
+## A. 
+
+1. Download the median age by state tables for 2010 and 2020 from the Canvas assignment [here](https://sjsu.instructure.com/courses/1571636/assignments/6775084). You can use the `read_csv` function from the `readr` package to open these files and save them as `age_2010` and `age_2020`.
+
+```{r, eval = T, echo = T}
+age_2010 <- readr::read_csv("median_age_by_state_2010.csv")
+age_2020 <- readr::read_csv("median_age_by_state_2020.csv")
+```
+
+2. Create a scatter plot with each state as a point, with 2020 median age on the y-axis and 2010 median age on the x-axis. You may use any of the functions we have discussed in class. Note that there are many possible solutions. My solution used `pivot_wider()`, `left_join()`, and `ggplot()`, but you are welcome to use any solution you wish.
+
+```{r, eval = F, echo = T}
+merged_df <- merge(age_2010, age_2020, by = c("GEOID", "NAME"))
+merged_df <- merged_df %>%
+  rename(
+    value_2010 = value.x,
+    value_2020 = value.y,
+    variable_2010 = variable.x,
+    variable_2020 = variable.y
+  )
+print(colnames(merged_df))
+#merged_df
+merged_df %>% ggplot(aes(value_2010, value_2020, color = NAME)) + geom_point() + xlab("2010 median") + ylab("2020 median") + ggtitle('title')
+```
+
+
+**Note**: the following commands were used to download this data using the `tidycensus` package. You do not need to run the following code: it is only provided in case you are curious about downloading data from the U.S. Census using R. In your final report, be sure that the following code chunk is set to `eval = F` and `echo = F`.
+
+```{r, eval = F, echo = F}
+# the following code loads my local Census API Key, which is used to access 
+# census data
+Sys.getenv("CENSUS_API_KEY")
+
+# 2010 median age by state
+age_2010 <- get_decennial(geography = "state", 
+                          variables = "P013I001", 
+                          year = 2010,
+                          sumfile = "sf1")
+
+# 2020 median age by state
+age_2020 <- get_decennial(geography = "state",
+                          variables = "P13_001N",
+                          year = 2020,
+                          sumfile = "dhc")
+
+
+# write to csv files
+write.csv(age_2010, "~/Documents/MATH167R/data/median_age_by_state_2010.csv")
+write.csv(age_2020, "~/Documents/MATH167R/data/median_age_by_state_2020.csv")
+```
+
+## B. Your choice of data
+
+3. As a group, identify a dataset of interest and open it in R. Provide a brief one paragraph description of the dataset and explain why you chose it.
+We chose the Monthly Sales Retail Sales dataset from the US Census Bureau's Monthly State Retail Sales. The data is updated monthly. this data was pulled on 2022/12/10. The reason we chose this dataset was because it was easy to understand and it helped get us a good understanding of the economic outlook of the country. the visualisations were pretty easy to do as well. 
+
+4. State three possible research questions you could explore using this dataset.
+#1 What is the economic outlook after the pandemic?
+
+#2 Is the economic outlook the same as it was before and after the pandemic by 5 most populated state? 
+
+#3 Is the economic outlook the same as it was before and after the pandemic in California by subsector? 
+
+
+5. For each of your three research questions, generate a descriptive statistic or data visualization using your dataset. Discuss and interpret your findings.
+```{r, eval = F, echo = T}
+state_retail <- readr::read_csv("state_retail.csv")
+
+# Question 1: What is the economic outlook after the pandemic?
+## Creating a year Month columns and make it into Date format
+state_retail$YearMonth <- as.Date(paste(state_retail$year, state_retail$month, "01"), "%Y%m%d")
+
+## Clean data for every code "S" in coverage code in state_retail dataset 
+state_retail <- state_retail |> filter(coverage_code != "S")
+
+## Turn change_yoy into numeric
+state_retail$change_yoy <- as.numeric(state_retail$change_yoy)
+
+## Plot data from 2019 to 2022
+state_retail |> filter(state_abbr == "USA", subsector == "total") |> 
+  ggplot(aes(x = YearMonth, y = change_yoy)) + geom_line() + 
+  scale_x_date(date_labels = "%Y %m") + 
+  geom_vline(xintercept = as.Date("2020-04-01", "2020-03-01"), linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = as.Date("2021-04-01", "2020-03-01"), linetype = "dashed", color = "red") + 
+  ylab("Year_over_year change") +
+  xlab("Year Month") + 
+  ggtitle("Year over year change of monthly retail sales for all retail sectors in the US")
+```
+
+
+
+From the graph we can observe that just as the pandemic hit, retail sales fell down drastically.Because of this, the year over year change for 2020 when compared to 2019 went down before it rose back a bit towards normal later towards the end of the year. Similarly when we compare the year over year change for beginning of 2021, we can see a huge spike. This is because, when compared to the sales in the beginning of 2020 when the pandemic occured, the change overwhelming due to low retail sales in 2020. Hence the graph is spiked for the beginning of 2021. 
+
+```{r, eval = F, echo = T}
+# Question 2:Is the economic outlook the same as it was before and after the pandemic by 5 most populated state? 
+states <- c("CA", "TX", "FL", "NY", "MI")
+state_retail |> filter(state_abbr %in% states , subsector == "total") |>
+  ggplot(aes(x = YearMonth, y = change_yoy, color = state_abbr)) + geom_line() + 
+  scale_x_date(date_labels = "%Y %m") + 
+  geom_vline(xintercept = as.Date("2020-04-01"), linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = as.Date("2021-04-01"), linetype = "dashed", color = "red") +
+  ylab("Year_over_year change") +
+  xlab("Year Month") + 
+  ggtitle("Year over year change of monthly retail sales in 5 most populous states in US")
+```
+From the graph we can see that they year over year. change is very similar for the 5 most populous states. Being populous, they are more vulnerable to the covid outbreak and therefore, their retail sales were hit with the same magnitude. 
+
+```{r, eval = F, echo = T}
+# Question 3: Is the economic outlook the same as it was before and after the pandemic in California by subsector?
+subsector_chosen <- c("Motor vehicle and parts dealers", "Electronics and Appliances", "Food and Beverage", "Health and Personal Care", "Gasoline Stations", "total")
+
+state_retail |> filter(state_abbr == "CA", subsector %in% subsector_chosen) |> 
+  ggplot(aes(x = YearMonth, y = change_yoy, color = subsector)) + geom_line() + 
+  scale_x_date(date_labels = "%Y %m") + 
+  geom_vline(xintercept = as.Date("2020-03-01"), linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = as.Date("2021-03-01"), linetype = "dashed", color = "red") + 
+  ylab("Year_over_year change") +
+  xlab("Year Month") + 
+  ggtitle("Year over year change of monthly retail sales in California for 5 sectors")
+```
+From the graph, we can see that the retail sales in the food and beverage industry have remained stable throughout. In fact, we can see that they rose up during the beginning of pandemic. This could be because of people hoarding food and beverages in the event of lockdowns. motor vehicles and electronics had the sharpest spikes towards negative in beginning of 2020 and rose the most in the beginning of 2021. The lockdowns caused people to stay home and therefore the need of motor vehicles became redundant. A Electronics and appliances tend to be luxury items and therefore during times of difficulty, their sales dipped when compared to previous years. Health and personal care items are essentials to a certain extent and hence the difference over the years isn't too much. 
